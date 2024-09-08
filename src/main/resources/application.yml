@@ -14,3 +14,9 @@ spring:
   liquibase:
     enabled: true
     change-log: classpath:db/changelogs/changelog.xml
+  scheduling:
+    start-of-work-day: "08:00"
+    end-of-work-day: "22:00"
+    break-duration: 30  # Minutes
+    holidays:
+      - FRIDAY

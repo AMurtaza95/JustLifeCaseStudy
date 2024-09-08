@@ -43,23 +43,34 @@ public class AvailabilityControllerTest {
     @Test
     public void testGetAvailableCleanersForDate() throws Exception {
         LocalDate date = LocalDate.of(2024, 9, 8);
-        Map<String, List<LocalDateTime>> availableCleaners = Map.of(
-                "Cleaner1", List.of(LocalDateTime.of(2024, 9, 8, 10, 0)),
-                "Cleaner2", List.of(LocalDateTime.of(2024, 9, 8, 11, 0))
+
+        // Prepare mock response
+        AvailableCleanersByDateResponse cleaner1 = new AvailableCleanersByDateResponse(
+                "Cleaner1",
+                List.of(LocalDateTime.of(2024, 9, 8, 10, 0))
+        );
+        AvailableCleanersByDateResponse cleaner2 = new AvailableCleanersByDateResponse(
+                "Cleaner2",
+                List.of(LocalDateTime.of(2024, 9, 8, 11, 0))
         );
 
-        AvailableCleanersByDateResponse responseDto = new AvailableCleanersByDateResponse(availableCleaners);
+        List<AvailableCleanersByDateResponse> responseDto = List.of(cleaner1, cleaner2);
 
-        when(availabilityService.getAvailableCleanersForDate(date)).thenReturn(availableCleaners);
+        // Mock service call
+        when(availabilityService.getAvailableCleanersForDate(date)).thenReturn(responseDto);
 
+        // Perform GET request and validate response
         mockMvc.perform(get("/v1/availability/date")
-                        .param("date", "2024-09-08"))
+                        .param("date", date.toString()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.availableCleaners.Cleaner1", hasSize(1)))
-                .andExpect(jsonPath("$.availableCleaners.Cleaner1[0]").value("2024-09-08T10:00:00"))
-                .andExpect(jsonPath("$.availableCleaners.Cleaner2", hasSize(1)))
-                .andExpect(jsonPath("$.availableCleaners.Cleaner2[0]").value("2024-09-08T11:00:00"));
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].cleanerName").value("Cleaner1"))
+                .andExpect(jsonPath("$[0].availableTimeSlots[0]").exists())
+                .andExpect(jsonPath("$[1].cleanerName").value("Cleaner2"))
+                .andExpect(jsonPath("$[1].availableTimeSlots[0]").exists());
     }
+
+
 
 
     @Test

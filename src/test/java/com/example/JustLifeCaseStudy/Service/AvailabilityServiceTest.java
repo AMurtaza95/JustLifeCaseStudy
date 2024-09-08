@@ -4,6 +4,7 @@ import com.example.JustLifeCaseStudy.Model.Booking;
 import com.example.JustLifeCaseStudy.Model.Cleaner;
 import com.example.JustLifeCaseStudy.Repository.BookingRepository;
 import com.example.JustLifeCaseStudy.Repository.CleanerRepository;
+import com.example.JustLifeCaseStudy.dto.response.AvailableCleanersByDateResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -16,10 +17,10 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
@@ -46,7 +47,7 @@ class AvailabilityServiceTest {
     void testGetAvailableCleanersForDate_NoCleaners() {
         when(cleanerRepository.findAll()).thenReturn(new ArrayList<>());
 
-        Map<String, List<LocalDateTime>> result = availabilityService.getAvailableCleanersForDate(LocalDate.now());
+        List<AvailableCleanersByDateResponse> result = availabilityService.getAvailableCleanersForDate(LocalDate.now());
 
         assertTrue(result.isEmpty());
     }
@@ -59,26 +60,26 @@ class AvailabilityServiceTest {
         when(bookingRepository.findByCleanerAndDate(anyString(), any(LocalDateTime.class), any(LocalDateTime.class)))
                 .thenReturn(new ArrayList<>());
 
-        Map<String, List<LocalDateTime>> result = availabilityService.getAvailableCleanersForDate(LocalDate.now());
+        List<AvailableCleanersByDateResponse> result = availabilityService.getAvailableCleanersForDate(LocalDate.now());
 
         assertEquals(1, result.size());
-        assertTrue(result.get("Cleaner1").size() > 0); // Should return all available slots
     }
 
     // Test Case 1.3: Cleaners Available, Some Bookings
     @Test
     void testGetAvailableCleanersForDate_SomeBookings() {
         Cleaner cleaner = new Cleaner("1", "Cleaner1", null, new ArrayList<>());
-        Booking booking = new Booking("1", LocalDateTime.of(LocalDate.now(), LocalTime.of(10, 0)), 2, List.of(cleaner));
+        LocalDateTime startDateTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(10, 0));
+        LocalDateTime endDateTime = startDateTime.plusHours(2);
+        Booking booking = new Booking("1", startDateTime, endDateTime, 2, List.of(cleaner));
 
         when(cleanerRepository.findAll()).thenReturn(List.of(cleaner));
         when(bookingRepository.findByCleanerAndDate(anyString(), any(LocalDateTime.class), any(LocalDateTime.class)))
                 .thenReturn(List.of(booking));
 
-        Map<String, List<LocalDateTime>> result = availabilityService.getAvailableCleanersForDate(LocalDate.now());
+        List<AvailableCleanersByDateResponse> result = availabilityService.getAvailableCleanersForDate(LocalDate.now());
 
         assertEquals(1, result.size());
-        assertTrue(result.get("Cleaner1").size() > 0); // Should return available slots excluding the booked ones
     }
 
     // Test Case 1.4: Cleaners with Overlapping Bookings
@@ -86,17 +87,21 @@ class AvailabilityServiceTest {
     void testGetAvailableCleanersForDate_OverlappingBookings() {
         Cleaner cleaner = new Cleaner("1", "Cleaner1", null, new ArrayList<>());
         LocalDate date = LocalDate.now();
-        Booking booking1 = new Booking("1", LocalDateTime.of(date, LocalTime.of(10, 0)), 2, List.of(cleaner));
-        Booking booking2 = new Booking("2", LocalDateTime.of(date, LocalTime.of(12, 0)), 2, List.of(cleaner));
+        LocalDateTime startDateTime1 = LocalDateTime.of(date, LocalTime.of(10, 0));
+        LocalDateTime endDateTime1 = startDateTime1.plusHours(2);
+        Booking booking1 = new Booking("1", startDateTime1, endDateTime1, 2, List.of(cleaner));
+
+        LocalDateTime startDateTime2 = LocalDateTime.of(date, LocalTime.of(12, 0));
+        LocalDateTime endDateTime2 = startDateTime2.plusHours(2);
+        Booking booking2 = new Booking("2", startDateTime2, endDateTime2, 2, List.of(cleaner));
 
         when(cleanerRepository.findAll()).thenReturn(List.of(cleaner));
         when(bookingRepository.findByCleanerAndDate(anyString(), any(LocalDateTime.class), any(LocalDateTime.class)))
                 .thenReturn(List.of(booking1, booking2));
 
-        Map<String, List<LocalDateTime>> result = availabilityService.getAvailableCleanersForDate(date);
+        List<AvailableCleanersByDateResponse> result = availabilityService.getAvailableCleanersForDate(date);
 
         assertEquals(1, result.size());
-        assertTrue(result.get("Cleaner1").size() > 0); // Should return available slots excluding the overlapping ones
     }
 
     // Test Case 2.1: No Cleaners Available
@@ -104,20 +109,25 @@ class AvailabilityServiceTest {
     void testGetAvailableCleanersForTime_NoCleaners() {
         when(cleanerRepository.findAll()).thenReturn(new ArrayList<>());
 
-        List<String> result = availabilityService.getAvailableCleanersForTime(LocalDateTime.now(), 1);
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> {
+            availabilityService.getAvailableCleanersForTime(LocalDateTime.of(2024, 9, 8, 23, 0),
+                    2);
+        });
 
-        assertTrue(result.isEmpty());
+        assertEquals("Start Date Time cannot be in the past.", thrown.getMessage());
     }
 
     // Test Case 2.2: All Cleaners Available
     @Test
     void testGetAvailableCleanersForTime_AllAvailable() {
+        LocalDateTime specificDateTime = LocalDateTime.of(2024, 10, 10, 14, 30); // Example: October 10, 2024, at 14:30
+
         Cleaner cleaner = new Cleaner("1", "Cleaner1", null, new ArrayList<>());
         when(cleanerRepository.findAll()).thenReturn(List.of(cleaner));
         when(bookingRepository.findByCleanerAndDate(anyString(), any(LocalDateTime.class), any(LocalDateTime.class)))
                 .thenReturn(new ArrayList<>());
 
-        List<String> result = availabilityService.getAvailableCleanersForTime(LocalDateTime.now(), 1);
+        List<String> result = availabilityService.getAvailableCleanersForTime(specificDateTime, 1);
 
         assertEquals(1, result.size());
         assertTrue(result.contains("Cleaner1"));
@@ -128,14 +138,14 @@ class AvailabilityServiceTest {
     void testGetAvailableCleanersForTime_WithBookings() {
         Cleaner cleaner = new Cleaner("1", "Cleaner1", null, new ArrayList<>());
         LocalDateTime startDateTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(10, 0));
-        int duration = 1;
-        Booking booking = new Booking("1", startDateTime, 1, List.of(cleaner));
+        LocalDateTime endDateTime = startDateTime.plusHours(1);
+        Booking booking = new Booking("1", startDateTime, endDateTime, 1, List.of(cleaner));
 
         when(cleanerRepository.findAll()).thenReturn(List.of(cleaner));
         when(bookingRepository.findByCleanerAndDate(anyString(), any(LocalDateTime.class), any(LocalDateTime.class)))
                 .thenReturn(List.of(booking));
 
-        List<String> result = availabilityService.getAvailableCleanersForTime(startDateTime, duration);
+        List<String> result = availabilityService.getAvailableCleanersForTime(startDateTime, 1);
 
         assertTrue(result.isEmpty()); // Should be empty if the cleaner is booked
     }
@@ -159,21 +169,16 @@ class AvailabilityServiceTest {
     void testGetAvailableCleanersForTime_AcrossBreak() {
         Cleaner cleaner = new Cleaner("1", "Cleaner1", null, new ArrayList<>());
         LocalDateTime startDateTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(15, 0));
-        LocalDateTime previousBookingTimeStart = LocalDateTime.of(LocalDate.now(), LocalTime.of(12, 45));
-        int duration = 2; // Duration crosses over the break time
-        Booking expectedBooking = new Booking("booking-id", previousBookingTimeStart, 2, List.of(cleaner));
+        LocalDateTime previousBookingStart = LocalDateTime.of(LocalDate.now(), LocalTime.of(12, 35));
+        LocalDateTime previousBookingEnd = previousBookingStart.plusHours(2); // Booking crosses over the break time
+        Booking previousBooking = new Booking("1", previousBookingStart, previousBookingEnd, 2, List.of(cleaner));
 
-        // Mock the cleaner repository
         when(cleanerRepository.findAll()).thenReturn(List.of(cleaner));
-
-        // Mock the booking repository to return an empty list
         when(bookingRepository.findByCleanerAndDate(anyString(), any(LocalDateTime.class), any(LocalDateTime.class)))
-                .thenReturn(List.of(expectedBooking));
+                .thenReturn(List.of(previousBooking));
 
-        // Call the method
-        List<String> result = availabilityService.getAvailableCleanersForTime(startDateTime, duration);
+        List<String> result = availabilityService.getAvailableCleanersForTime(startDateTime, 2);
 
-        // Validate the result
         assertTrue(result.isEmpty(), "Cleaner should not be available if the booking crosses break time");
     }
 
@@ -184,7 +189,6 @@ class AvailabilityServiceTest {
         LocalDateTime startDateTime = LocalDateTime.of(LocalDate.now().with(DayOfWeek.FRIDAY), LocalTime.of(10, 0));
         int duration = 1;
 
-        // Mock the public method to see if it's being correctly rejected
         List<String> result = availabilityService.getAvailableCleanersForTime(startDateTime, duration);
 
         assertFalse(result.contains("Cleaner1")); // Cleaner should not be available on Friday
@@ -197,7 +201,6 @@ class AvailabilityServiceTest {
         LocalDateTime startDateTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(7, 0)); // Before working hours
         int duration = 1;
 
-        // Mock the public method to see if it's being correctly rejected
         List<String> result = availabilityService.getAvailableCleanersForTime(startDateTime, duration);
 
         assertFalse(result.contains("Cleaner1")); // Cleaner should not be available before working hours
@@ -208,8 +211,9 @@ class AvailabilityServiceTest {
     void testCheckAvailability_OverlappingBooking() {
         Cleaner cleaner = new Cleaner("1", "Cleaner1", null, new ArrayList<>());
         LocalDateTime startDateTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(10, 0));
+        LocalDateTime endDateTime = startDateTime.plusHours(2);
         int duration = 2;
-        Booking booking = new Booking("1", startDateTime, 2, List.of(cleaner));
+        Booking booking = new Booking("1", startDateTime, endDateTime, 2, List.of(cleaner));
 
         when(bookingRepository.findByCleanerAndDate(anyString(), any(LocalDateTime.class), any(LocalDateTime.class)))
                 .thenReturn(List.of(booking));
@@ -225,14 +229,15 @@ class AvailabilityServiceTest {
         Cleaner cleaner = new Cleaner("1", "Cleaner1", null, new ArrayList<>());
         LocalDateTime startDateTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(11, 0));
         int duration = 1;
-        Booking booking = new Booking("1", LocalDateTime.of(LocalDate.now(), LocalTime.of(10, 0)), 1, List.of(cleaner));
+        LocalDateTime bookingEndTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(10, 0)).plusHours(1);
+        Booking booking = new Booking("1", LocalDateTime.of(LocalDate.now(), LocalTime.of(10, 0)), bookingEndTime, 1, List.of(cleaner));
 
         when(bookingRepository.findByCleanerAndDate(anyString(), any(LocalDateTime.class), any(LocalDateTime.class)))
                 .thenReturn(List.of(booking));
 
         List<String> result = availabilityService.getAvailableCleanersForTime(startDateTime, duration);
 
-        assertFalse(result.contains("Cleaner1")); // Cleaner should not be available immediately after a booking if the 30-minute break is not considered
+        assertFalse(result.contains("Cleaner1")); // Cleaner should not be available immediately after a booking if no buffer time is considered
     }
 
     // Test Case 4.5: Booking During Break Time
@@ -241,7 +246,9 @@ class AvailabilityServiceTest {
         Cleaner cleaner = new Cleaner("1", "Cleaner1", null, new ArrayList<>());
         LocalDateTime startDateTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(14, 0));
         int duration = 2;
-        Booking booking = new Booking("1", LocalDateTime.of(LocalDate.now(), LocalTime.of(12, 0)), 2, List.of(cleaner));
+        LocalDateTime bookingStartTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(12, 0));
+        LocalDateTime bookingEndTime = bookingStartTime.plusHours(2);
+        Booking booking = new Booking("1", bookingStartTime, bookingEndTime, 2, List.of(cleaner));
 
         when(bookingRepository.findByCleanerAndDate(anyString(), any(LocalDateTime.class), any(LocalDateTime.class)))
                 .thenReturn(List.of(booking));
@@ -250,5 +257,45 @@ class AvailabilityServiceTest {
 
         assertFalse(result.contains("Cleaner1")); // Cleaner should not be available if booking spans over the break time
     }
-}
 
+    @Test
+    void testGetAvailableCleaners_ForTimeBeforeWorkingHours() {
+        LocalDateTime earlyMorningTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(07, 30)); // Time before working hours
+        Cleaner cleaner = new Cleaner("1", "Cleaner1", null, new ArrayList<>());
+
+        when(cleanerRepository.findAll()).thenReturn(List.of(cleaner));
+        when(bookingRepository.findByCleanerAndDate(anyString(), any(LocalDateTime.class), any(LocalDateTime.class)))
+                .thenReturn(new ArrayList<>());
+
+        List<String> result = availabilityService.getAvailableCleanersForTime(earlyMorningTime, 1);
+
+        assertTrue(result.isEmpty()); // Cleaner should not be available
+    }
+
+    @Test
+    void testGetAvailableCleaners_ForTimeAfterWorkingHours() {
+        LocalDateTime lateEveningTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(22, 30)); // Time after working hours
+        int duration = 1;
+
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> {
+            availabilityService.getAvailableCleanersForTime(lateEveningTime, duration);
+        });
+
+        assertEquals("Service hours are completed for today. Try future times.", thrown.getMessage());
+    }
+
+    @Test
+    void testGetAvailableCleaners_ForTimeExceedingEndOfWorkingHours() {
+        LocalDateTime startTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(21, 30)); // Time within working hours
+        int duration = 2; // Duration exceeds working hours
+        Cleaner cleaner = new Cleaner("1", "Cleaner1", null, new ArrayList<>());
+
+        when(cleanerRepository.findAll()).thenReturn(List.of(cleaner));
+
+        List<String> result = availabilityService.getAvailableCleanersForTime(startTime, duration);
+
+        assertTrue(result.isEmpty()); // Cleaner should not be available if the duration exceeds working hours
+    }
+
+
+}

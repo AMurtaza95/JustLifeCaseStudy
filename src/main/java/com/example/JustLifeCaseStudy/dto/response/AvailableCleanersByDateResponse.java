@@ -2,20 +2,29 @@ package com.example.JustLifeCaseStudy.dto.response;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 public class AvailableCleanersByDateResponse {
-    private Map<String, List<LocalDateTime>> availableCleaners;
+    private String cleanerName;
+    private List<LocalDateTime> availableTimeSlots;
 
-    public AvailableCleanersByDateResponse(Map<String, List<LocalDateTime>> availableCleaners) {
-        this.availableCleaners = availableCleaners;
+    public AvailableCleanersByDateResponse(String cleanerName, List<LocalDateTime> availableTimeSlots) {
+        this.cleanerName = cleanerName;
+        this.availableTimeSlots = availableTimeSlots;
     }
 
-    public Map<String, List<LocalDateTime>> getAvailableCleaners() {
-        return availableCleaners;
+    public String getCleanerName() {
+        return cleanerName;
     }
 
-    public void setAvailableCleaners(Map<String, List<LocalDateTime>> availableCleaners) {
-        this.availableCleaners = availableCleaners;
+    public void setCleanerName(String cleanerName) {
+        this.cleanerName = cleanerName;
+    }
+
+    public List<LocalDateTime> getAvailableTimeSlots() {
+        return availableTimeSlots;
+    }
+
+    public void setAvailableTimeSlots(List<LocalDateTime> availableTimeSlots) {
+        this.availableTimeSlots = availableTimeSlots;
     }
 }

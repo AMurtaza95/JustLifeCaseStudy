@@ -5,6 +5,7 @@ import com.example.JustLifeCaseStudy.Model.Booking;
 import com.example.JustLifeCaseStudy.Model.Cleaner;
 import com.example.JustLifeCaseStudy.Repository.BookingRepository;
 import com.example.JustLifeCaseStudy.Repository.CleanerRepository;
+import com.example.JustLifeCaseStudy.dto.response.AvailableCleanersByDateResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,9 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class AvailabilityService {
@@ -27,20 +26,42 @@ public class AvailabilityService {
     @Autowired
     private BookingRepository bookingRepository;
 
-    public Map<String, List<LocalDateTime>> getAvailableCleanersForDate(LocalDate date) {
+    public List<AvailableCleanersByDateResponse> getAvailableCleanersForDate(LocalDate date) {
+
+        LocalDate today = LocalDate.now();
+        if (date.isBefore(today)) {
+            throw new IllegalArgumentException("Start Date Time cannot be in the past.");
+        }
+
+        // Check if the date is today and the time is after 22:00
+        if (date.equals(today) && LocalTime.now().isAfter(LocalTime.of(22, 0))) {
+            throw new IllegalArgumentException("Service hours are completed for today. Try future dates.");
+        }
+
         List<Cleaner> allCleaners = cleanerRepository.findAll();
-        Map<String, List<LocalDateTime>> availableCleaners = new HashMap<>();
+        //Map<String, List<LocalDateTime>> availableCleaners = new HashMap<>();
+        List<AvailableCleanersByDateResponse> availableCleaners = new ArrayList<>();
 
         for (Cleaner cleaner : allCleaners) {
             List<LocalDateTime> availableTimes = findAvailableTimes(cleaner, date);
             if (!availableTimes.isEmpty()) {
-                availableCleaners.put(cleaner.getName(), availableTimes);
+                availableCleaners.add(new AvailableCleanersByDateResponse(cleaner.getName(), availableTimes));
             }
         }
         return availableCleaners;
     }
 
     public List<String> getAvailableCleanersForTime(LocalDateTime startDateTime, int duration) {
+
+        LocalDateTime now = LocalDateTime.now();
+        if (startDateTime.isBefore(now)) {
+            throw new IllegalArgumentException("Start Date Time cannot be in the past.");
+        }
+
+        if (startDateTime.toLocalTime().isAfter(LocalTime.of(22, 0))) {
+            throw new IllegalArgumentException("Service hours are completed for today. Try future times.");
+        }
+
         List<Cleaner> allCleaners = cleanerRepository.findAll();
         List<String> availableCleaners = new ArrayList<>();
 

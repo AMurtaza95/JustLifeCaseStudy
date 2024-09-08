@@ -14,6 +14,14 @@ public class BookingRequestDto {
     @NotNull(message = "Cleaner IDs cannot be null")
     private List<String> cleanerIds; // List of IDs of assigned cleaners
 
+    public BookingRequestDto(){}
+
+    public BookingRequestDto(LocalDateTime startDateTime, int duration, List<String> cleanersId) {
+        this.startDateTime = startDateTime;
+        this.duration = duration;
+        this.cleanerIds = cleanersId;
+    }
+
     // Getters and setters
     public LocalDateTime getStartDateTime() {
         return startDateTime;

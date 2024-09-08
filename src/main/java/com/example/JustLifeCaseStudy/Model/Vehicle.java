@@ -1,12 +1,16 @@
 package com.example.JustLifeCaseStudy.Model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "vehicle")
-public class Vehicle {
+public class Vehicle extends BaseEntity{
     @Id
     private String id;
 

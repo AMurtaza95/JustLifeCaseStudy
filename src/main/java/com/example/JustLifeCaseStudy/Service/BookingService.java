@@ -29,6 +29,16 @@ public class BookingService {
     // Booking creation logic
     @Transactional
     public Booking createBooking(BookingRequestDto bookingRequestDto) {
+
+        LocalDateTime now = LocalDateTime.now();
+        if (bookingRequestDto.getStartDateTime().isBefore(now)) {
+            throw new IllegalArgumentException("Start time cannot be in the past.");
+        }
+
+        if (bookingRequestDto.getStartDateTime().toLocalTime().isAfter(LocalTime.of(22, 0))) {
+            throw new IllegalArgumentException("Service hours are completed for today. Try future times.");
+        }
+
         // Ensure cleaner count (1-3)
         if (bookingRequestDto.getCleanerIds().isEmpty() || bookingRequestDto.getCleanerIds().size() > 3) {
             throw new IllegalArgumentException("You can only book 1, 2, or 3 cleaners.");
@@ -52,8 +62,10 @@ public class BookingService {
             }
         }
 
+        LocalDateTime bookingEndTime = bookingRequestDto.getStartDateTime().plusHours(bookingRequestDto.getDuration());
+
         // Create a new booking and assign the cleaners
-        Booking booking = new Booking(UUID.randomUUID().toString(), bookingRequestDto.getStartDateTime(), bookingRequestDto.getDuration(), cleaners);
+        Booking booking = new Booking(UUID.randomUUID().toString(), bookingRequestDto.getStartDateTime(), bookingEndTime, bookingRequestDto.getDuration(), cleaners);
         bookingRepository.save(booking);
 
         // After the booking is created, the cleaner professionals' available times are implicitly updated due to existing availability check logic
@@ -63,6 +75,16 @@ public class BookingService {
 
     @Transactional
     public Booking updateBooking(String bookingId, LocalDateTime newStartDateTime, int newDuration) {
+
+        LocalDateTime now = LocalDateTime.now();
+        if (newStartDateTime.isBefore(now)) {
+            throw new IllegalArgumentException("Start time cannot be in the past.");
+        }
+
+        if (newStartDateTime.toLocalTime().isAfter(LocalTime.of(22, 0))) {
+            throw new IllegalArgumentException("Service hours are completed for today. Try future times.");
+        }
+
         // Fetch the booking by ID
         Optional<Booking> bookingOptional = bookingRepository.findById(bookingId);
         if (bookingOptional.isEmpty()) {

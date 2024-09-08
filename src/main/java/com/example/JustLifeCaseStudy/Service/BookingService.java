@@ -148,7 +148,7 @@ public class BookingService {
             LocalDateTime proposedStartWithBreak = bookingEnd.plusMinutes(30); // 30-minute break after booking
 
             // Check for overlap
-            if (startDateTime.isBefore(bookingEnd) && proposedEndDateTime.isAfter(bookingStart)) {
+            if (startDateTime.isBefore(bookingEnd) && (proposedEndDateTime.isAfter(bookingStart) || proposedEndDateTime.equals(bookingStart))) {
                 return false; // There's an overlap
             }
 

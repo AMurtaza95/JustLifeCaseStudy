@@ -20,3 +20,5 @@ spring:
     break-duration: 30  # Minutes
     holidays:
       - FRIDAY
+server:
+  port: 8087

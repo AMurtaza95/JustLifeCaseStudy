@@ -1,11 +1,9 @@
 package com.example.JustLifeCaseStudy.Repository;
 
-import com.example.JustLifeCaseStudy.Model.Cleaner;
 import com.example.JustLifeCaseStudy.Model.Vehicle;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.UUID;
-
-public interface VehicleRepository extends JpaRepository<Vehicle, UUID> {
+@Repository
+public interface VehicleRepository extends JpaRepository<Vehicle, String> {
 }

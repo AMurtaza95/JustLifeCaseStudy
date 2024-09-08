@@ -251,3 +251,4 @@ class AvailabilityServiceTest {
         assertFalse(result.contains("Cleaner1")); // Cleaner should not be available if booking spans over the break time
     }
 }
+

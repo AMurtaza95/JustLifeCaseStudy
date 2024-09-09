@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -43,6 +44,8 @@ class BookingServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
+    LocalDateTime startDateTimeGlobal = LocalDateTime.now().plusDays(100).with(DayOfWeek.MONDAY);
+
     // Test Case 1: Successful Booking Creation
     @Test
     void testCreateBooking_Successful() {
@@ -52,7 +55,7 @@ class BookingServiceTest {
         Cleaner cleaner3 = new Cleaner("3", "Cleaner3", vehicle, null);
         vehicle.setCleaners(List.of(cleaner1, cleaner2, cleaner3));
         BookingRequestDto requestDto = new BookingRequestDto(
-                LocalDateTime.now().plusDays(100).withHour(9).withMinute(0),
+                startDateTimeGlobal.withHour(9).withMinute(0),
                 2,
                 List.of("1", "2", "3")
         );
@@ -71,7 +74,7 @@ class BookingServiceTest {
     @Test
     void testCreateBooking_InvalidNumberOfCleaners() {
         BookingRequestDto requestDto = new BookingRequestDto(
-                LocalDateTime.now().plusDays(100).withHour(9).withMinute(0),
+                startDateTimeGlobal.withHour(9).withMinute(0),
                 2,
                 List.of("1", "2", "3", "4")
         );
@@ -93,7 +96,7 @@ class BookingServiceTest {
         vehicle1.setCleaners(List.of(cleaner1));
         vehicle2.setCleaners(List.of(cleaner2));
         BookingRequestDto requestDto = new BookingRequestDto(
-                LocalDateTime.now().plusDays(100).withHour(9).withMinute(0),
+                startDateTimeGlobal.withHour(9).withMinute(0),
                 2,
                 List.of("1", "2")
         );
@@ -114,7 +117,7 @@ class BookingServiceTest {
         Cleaner cleaner1 = new Cleaner("1", "Cleaner1", vehicle, null);
         Cleaner cleaner2 = new Cleaner("2", "Cleaner2", vehicle, null);
         vehicle.setCleaners(List.of(cleaner1, cleaner2));
-        LocalDateTime tesTime = LocalDateTime.now().plusDays(100).withHour(9).withMinute(0);
+        LocalDateTime tesTime = startDateTimeGlobal.withHour(9).withMinute(0);
         BookingRequestDto requestDto = new BookingRequestDto(
                 tesTime,
                 2,
@@ -135,7 +138,7 @@ class BookingServiceTest {
     @Test
     void invalidCleanerId() {
 
-        LocalDateTime tesTime = LocalDateTime.now().plusDays(100).withHour(9).withMinute(0);
+        LocalDateTime tesTime = startDateTimeGlobal.withHour(9).withMinute(0);
         BookingRequestDto requestDto = new BookingRequestDto(
                 tesTime,
                 2,
@@ -159,7 +162,7 @@ class BookingServiceTest {
         Cleaner cleaner = new Cleaner("1", "Cleaner1", vehicle, null);
         vehicle.setCleaners(List.of(cleaner));
         LocalDateTime fixedStartDateTime = LocalDateTime.of(2024, 12, 18, 11, 0);
-        Booking existingBooking = new Booking("1", LocalDateTime.of(2024, 9, 8, 9, 0), LocalDateTime.of(2024, 9, 8, 11, 0), 2, List.of(cleaner));
+        Booking existingBooking = new Booking("1", startDateTimeGlobal.withHour(9).withMinute(0), startDateTimeGlobal.withHour(11).withMinute(0), 2, List.of(cleaner));
         BookingRequestDto requestDto = new BookingRequestDto(
                 fixedStartDateTime,
                 2,
@@ -186,7 +189,7 @@ class BookingServiceTest {
         when(bookingRepository.findById(anyString())).thenReturn(Optional.empty());
 
         IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> {
-            bookingService.updateBooking("invalid-id", LocalDateTime.now().plusDays(100).withHour(9).withMinute(0), 2);
+            bookingService.updateBooking("invalid-id", startDateTimeGlobal.withHour(9).withMinute(0), 2);
         });
 
         assertEquals("Booking not found.", thrown.getMessage());
@@ -200,19 +203,19 @@ class BookingServiceTest {
         vehicle.setCleaners(List.of(cleaner));
 
         Booking existingBooking = new Booking("1",
-                LocalDateTime.now().plusDays(100).withHour(9).withMinute(0),
-                LocalDateTime.now().plusDays(100).withHour(11).withMinute(0),
+                startDateTimeGlobal.withHour(9).withMinute(0),
+                startDateTimeGlobal.withHour(11).withMinute(0),
                 2,
                 List.of(cleaner)
         );
 
-        LocalDateTime newStartDateTime = LocalDateTime.now().plusDays(100).withHour(10).withMinute(0);
+        LocalDateTime newStartDateTime = startDateTimeGlobal.withHour(10).withMinute(0);
         int newDuration = 2;
 
         // Bookings that overlap with the new start time
         Booking conflictingBooking = new Booking("2",
-                LocalDateTime.now().plusDays(100).withHour(10).withMinute(0),
-                LocalDateTime.now().plusDays(100).withHour(12).withMinute(0),
+                startDateTimeGlobal.withHour(10).withMinute(0),
+                startDateTimeGlobal.withHour(12).withMinute(0),
                 2,
                 List.of(cleaner)
         );

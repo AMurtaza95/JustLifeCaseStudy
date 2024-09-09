@@ -43,7 +43,7 @@ class AvailabilityServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    LocalDateTime startDateTimeGlobal = LocalDateTime.now().plusDays(100).equals(DayOfWeek.FRIDAY) ? LocalDateTime.now().plusDays(101) : LocalDateTime.now().plusDays(100);
+    LocalDateTime startDateTimeGlobal = LocalDateTime.now().plusDays(100).with(DayOfWeek.MONDAY);
 
     // Test Case 1.1: No Cleaners Available
     @Test

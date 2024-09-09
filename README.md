@@ -26,6 +26,11 @@ http://[host]:[port]/swagger-ui/index.html
 
 ```
 
+### Entity Relationship Diagram
+
+![JUSTLIFE ERD](https://github.com/AMurtaza95/JustLifeCaseStudy/blob/main/ERD%20For%20JustLife.PNG)
+
+
 ### Testing
 Run the following command to run test cases:
 

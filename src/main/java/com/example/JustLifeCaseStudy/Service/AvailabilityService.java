@@ -39,7 +39,6 @@ public class AvailabilityService {
         }
 
         List<Cleaner> allCleaners = cleanerRepository.findAll();
-        //Map<String, List<LocalDateTime>> availableCleaners = new HashMap<>();
         List<AvailableCleanersByDateResponse> availableCleaners = new ArrayList<>();
 
         for (Cleaner cleaner : allCleaners) {
@@ -95,7 +94,7 @@ public class AvailabilityService {
         List<LocalDateTime> availableTimes = new ArrayList<>();
         LocalDateTime currentStartTime = startOfWorkDay;
 
-        while (currentStartTime.plusHours(2).isBefore(endOfWorkDay) || currentStartTime.plusHours(4).isBefore(endOfWorkDay)) {
+        while (currentStartTime.plusHours(2).isBefore(endOfWorkDay)) {
             boolean isAvailable = true;
             LocalDateTime currentEndTime = currentStartTime.plusHours(2);
 

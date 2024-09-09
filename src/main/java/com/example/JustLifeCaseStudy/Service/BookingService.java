@@ -47,6 +47,9 @@ public class BookingService {
         // Fetch the list of cleaners by their IDs
         List<Cleaner> cleaners = cleanerRepository.findByIdIn(bookingRequestDto.getCleanerIds());
 
+        if(cleaners.isEmpty()) {
+            throw new IllegalArgumentException("Not a valid cleaner id " +bookingRequestDto.getCleanerIds());
+        }
         // Check that all cleaners are from the same vehicle
         Vehicle assignedVehicle = cleaners.get(0).getVehicle();
         for (Cleaner cleaner : cleaners) {
@@ -106,6 +109,7 @@ public class BookingService {
         // Update the booking start time and duration
         booking.setStartDateTime(newStartDateTime);
         booking.setDuration(newDuration);
+        booking.setEndDateTime(newStartDateTime.plusHours(newDuration));
 
         // Save the updated booking
         bookingRepository.save(booking);

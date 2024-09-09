@@ -132,6 +132,25 @@ class BookingServiceTest {
         assertEquals("Cleaner Cleaner1 is not available for the requested time.", thrown.getMessage());
     }
 
+    @Test
+    void invalidCleanerId() {
+
+        LocalDateTime tesTime = LocalDateTime.now().plusDays(100).withHour(9).withMinute(0);
+        BookingRequestDto requestDto = new BookingRequestDto(
+                tesTime,
+                2,
+                List.of("1", "2")
+        );
+
+        when(cleanerRepository.findByIdIn(any())).thenReturn(List.of());
+
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> {
+            bookingService.createBooking(requestDto);
+        });
+
+        assertEquals("Not a valid cleaner id " +requestDto.getCleanerIds(), thrown.getMessage());
+    }
+
     // Test Case 5: Successful Booking Update
     @Test
     void testUpdateBooking_Successful() {
@@ -253,7 +272,4 @@ class BookingServiceTest {
 
         assertEquals("Start time cannot be in the past.", thrown.getMessage());
     }
-
-
-
 }

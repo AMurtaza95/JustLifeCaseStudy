@@ -14,9 +14,10 @@ import java.util.List;
 @Table(name = "cleaner")
 public class Cleaner extends BaseEntity {
     @Id
-    @Column(length = 36, nullable = false)
+    @Column(name = "id", length = 36, nullable = false)
     private String id;
 
+    @Column(name = "name", length = 255, nullable = false)
     private String name;
 
     @ManyToOne

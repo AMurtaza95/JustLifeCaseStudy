@@ -1,6 +1,7 @@
 package com.example.JustLifeCaseStudy.Model;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
@@ -11,9 +12,12 @@ import java.util.List;
 @Entity
 @Table(name = "vehicle")
 public class Vehicle extends BaseEntity{
+
     @Id
+    @Column(name = "id", length = 255, nullable = false)
     private String id;
 
+    @Column(name = "name", length = 255, nullable = false)
     private String name;
 
     @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL)

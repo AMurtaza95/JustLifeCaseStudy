@@ -1,5 +1,6 @@
 package com.example.JustLifeCaseStudy.Model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -14,11 +15,16 @@ import java.util.List;
 @Table(name = "booking")
 public class Booking extends BaseEntity {
     @Id
+    @Column(name = "id", nullable = false, length = 36)
     private String id;
 
+    @Column(name = "start_date_time", nullable = false)
     private LocalDateTime startDateTime;
 
+    @Column(name = "end_date_time", nullable = false) // DATETIME
     private LocalDateTime endDateTime;
+
+    @Column(name = "duration", nullable = false) // INT
     private int duration; // 2 or 4 hours
 
     @ManyToMany

@@ -14,6 +14,8 @@ datasource password=my-secret-pw
 
 ```
 
+Create Schema named 'cleaning_service' So liquibase can create tables in that.
+
 This project uses liquibase for database DDL scripts and for DML scripts e.g (Adding vehicles and cleaners) CommandLineRunner is user which will populate data when application gets up.
 
 ### API Documentation
